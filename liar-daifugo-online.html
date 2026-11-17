@@ -155,6 +155,28 @@ button,input{font:inherit;color:inherit}
 .slots{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
 .slots li{background:var(--rail-2);border-radius:8px;padding:6px 12px;display:flex;gap:10px;align-items:center}
 .slots .sn{font-family:var(--f-display);color:var(--brass);width:2.5em}
+#result .sheet{max-width:760px}
+.tblwrap{overflow-x:auto}
+.hsum{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+.hsum th,.hsum td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:right;white-space:nowrap}
+.hsum th:first-child,.hsum td:first-child{text-align:left}
+.hsum th{color:var(--muted);font-weight:700;font-size:11.5px}
+.hsum td.hot{color:var(--ng);font-weight:700}
+.hist{list-style:none;padding:0;margin:8px 0 16px;display:grid;gap:4px;font-size:12.5px}
+.hist li{display:flex;gap:8px;align-items:baseline;background:var(--rail-2);border-radius:8px;padding:5px 10px;border-left:3px solid transparent}
+.hist li.hl-lie{border-left-color:var(--ng)}
+.hist li.hf{background:none;color:var(--muted);justify-content:center;padding:0;font-size:11.5px;letter-spacing:.1em}
+.hn{color:var(--muted);min-width:1.8em;font-variant-numeric:tabular-nums}
+.hb{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;min-width:0}
+.cc{background:var(--paper);color:var(--suit-black);border-radius:4px;padding:0 5px;font-weight:700;font-size:12px}
+.cc.r{color:var(--suit-red)}
+.cc.dn{outline:2px dashed var(--brass);outline-offset:1px}
+.cc.bad{background:var(--ng);color:var(--on-brass)}
+.bdg{font-size:11px;border-radius:10px;padding:0 7px;font-weight:700}
+.bdg.lie{background:var(--ng);color:var(--on-brass)}
+.bdg.ok{border:1px solid var(--ok);color:var(--ok)}
+.dbt{color:var(--brass);font-size:12px}
+.exl{color:var(--muted);font-size:12px}
 .rank{display:grid;gap:8px;margin:10px 0 16px;padding:0;list-style:none}
 .rank li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;background:var(--rail-2);border-radius:10px;padding:8px 12px}
 .rank .pos{font-family:var(--f-display);color:var(--brass);font-size:15px}
@@ -196,11 +218,15 @@ button,input{font:inherit;color:inherit}
   <div class="sheet" role="dialog" aria-label="ロビー">
     <h2>嘘つき大富豪</h2>
     <p>大富豪のルールで手札を出し切るゲーム。カードは伏せて出せるので、嘘の宣言もできます。見抜いたらダウト。</p>
-    <div class="field"><label for="nick">ニックネーム</label><input class="inp" id="nick" maxlength="10" placeholder="例：たろう"></div>
+    <div class="row">
+      <div class="field"><label for="nick">ニックネーム</label><input class="inp" id="nick" maxlength="10" placeholder="例：たろう"></div>
+      <div class="field"><label for="pcount">人数（テーブルを作る人が決めます）</label>
+        <select class="inp" id="pcount"><option value="4">4人（1人8枚）</option><option value="5">5人（1人8枚）</option><option value="6">6人（1人8枚）</option><option value="7">7人（1人7枚）</option></select></div>
+    </div>
     <div id="lobby-main">
-      <div class="row"><button class="btn primary" data-act="solo" id="btn-solo">ひとりで遊ぶ（CPU 3人）</button></div>
+      <div class="row"><button class="btn primary" data-act="solo" id="btn-solo">ひとりで遊ぶ（残りはCPU）</button></div>
       <h3>オンライン対戦</h3>
-      <p class="muted">最大4人。空いた席はCPUが入ります。テーブルを作ってコードを友達に伝えてください。</p>
+      <p class="muted">4〜7人。空いた席はCPUが入ります。テーブルを作ってコードを友達に伝えてください。</p>
       <p class="muted warn" id="net-status"></p>
       <div class="row"><button class="btn" data-act="create" id="btn-create">テーブルを作る</button></div>
       <div class="row"><input class="inp" id="code" maxlength="6" placeholder="テーブルコード" autocomplete="off"><button class="btn" data-act="join" id="btn-join">参加する</button></div>
@@ -212,7 +238,7 @@ button,input{font:inherit;color:inherit}
 <div class="overlay" id="rules" hidden>
   <div class="sheet" role="dialog" aria-label="ルール">
     <h2>ルール</h2>
-    <p>4人で8枚ずつ配り、残りは使いません。手札を先に出し切った人から上位。ライフは各3、0になると敗北です。</p>
+    <p>4〜7人で遊びます。6人までは1人8枚、7人なら1人7枚を配り、残りは使いません。最初のゲームの親は抽選、2戦目からは前のゲームの最下位が親です。手札を先に出し切った人から上位。ライフは各3、0になると敗北です。</p>
     <h3>強さ</h3>
     <p>3 &lt; 4 &lt; … &lt; K &lt; A &lt; 2 &lt; JOKER。JOKERの単体出しにはスペードの3だけが勝てます。同じ枚数でしか出せません。</p>
     <h3>伏せ出しと宣言</h3>
@@ -223,7 +249,7 @@ button,input{font:inherit;color:inherit}
     <h3>ダウト</h3>
     <ul>
       <li>伏せカードを含む出し札には、次の番の人がダウトできます。その人がパスしたら、さらに次の人もダウトできます。5スキップで飛ばされた人もダウトできます。</li>
-      <li>本当だった場合：ダウトした人のライフ −1。出し札の能力が発動したあと場が流れ、出した人から新しく始めます。</li>
+      <li>本当だった場合：ダウトした人のライフ −1。ゲームはそのまま続きます。</li>
       <li>嘘だった場合：出した人のライフが伏せた枚数だけ減ります。カードは捨てられ、能力は発動せず、場が流れてダウトした人から再開します。7渡し・10捨てで選んだカードは手札に戻ります。</li>
       <li>伏せカードで上がって嘘がバレたら、最下位に都落ちします。</li>
     </ul>
@@ -231,7 +257,7 @@ button,input{font:inherit;color:inherit}
     <ul>
       <li>5スキップ：出した枚数だけ後の人を飛ばす</li>
       <li>7渡し：出した枚数だけ手札を次の人に渡す（非公開）</li>
-      <li>8切り：場を流して、もう一度自分から</li>
+      <li>8切り：場を流して、もう一度自分から。伏せた8切りは、出した人以外の全員に順番にダウトの機会が回ってから発動します</li>
       <li>10捨て：出した枚数だけ手札を捨てる（非公開）</li>
       <li>Jバック：場が流れるまで強さが逆転</li>
       <li>スペ3：JOKER単体に勝ち、場を流す</li>
@@ -245,6 +271,7 @@ button,input{font:inherit;color:inherit}
   <div class="sheet" role="dialog" aria-label="結果">
     <h2>結果</h2>
     <ol class="rank" id="rank"></ol>
+    <div id="histbox"></div>
     <p class="row"><button class="btn primary" data-act="new" id="btn-again">もう一度</button><button class="btn" data-act="close-result" id="btn-close-result">盤面を見る</button></p>
   </div>
 </div>
@@ -255,8 +282,9 @@ button,input{font:inherit;color:inherit}
 const PREFIX='liar-daifugo-v1-';
 const SUIT_CH={S:'♠',H:'♥',D:'♦',C:'♣'};
 const ABORT=Symbol('abort');
-const CPU_NAMES=['ギル','ローザ','ヴォルフ'];
-const TITLES=['大富豪','富豪','貧民','大貧民'];
+const CPU_NAMES=['ギル','ローザ','ヴォルフ','ミラ','ジン','カーラ'];
+function titleOf(k,n){if(k===0)return '大富豪';if(k===n-1)return '大貧民';if(k===1)return '富豪';if(k===n-2)return '貧民';return '平民';}
+function getCount(){const n=parseInt(document.getElementById('pcount').value,10);return n>=4&&n<=7?n:4;}
 const DECLS=[3,4,5,6,7,8,9,10,11,12,13,14,15].map(v=>({v})).concat([{v:3,spade3:true},{v:16}]);
 const CARD={};
 for(const s of ['S','H','D','C'])for(let r=1;r<=13;r++)CARD[s+r]={id:s+r,suit:s,rank:r};
@@ -304,9 +332,9 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 
 /* ---------- players ---------- */
 function isActive(i){const P=G.players[i];return P&&!P.finished&&!P.dead&&!P.miyako;}
-function activeList(){return [0,1,2,3].filter(isActive);}
-function nextActive(i){for(let k=1;k<=4;k++){const j=(i+k)%4;if(isActive(j))return j;}return -1;}
-function nextActives(p,k){const r=[];for(let s=1;s<4&&r.length<k;s++){const j=(p+s)%4;if(isActive(j))r.push(j);}return r;}
+function activeList(){return G.players.map((_,i)=>i).filter(isActive);}
+function nextActive(i){const N=G.players.length;for(let k=1;k<=N;k++){const j=(i+k)%N;if(isActive(j))return j;}return -1;}
+function nextActives(p,k){const N=G.players.length,r=[];for(let s=1;s<N&&r.length<k;s++){const j=(p+s)%N;if(isActive(j))r.push(j);}return r;}
 function allOthersPassed(){const t=G.top;return activeList().filter(i=>i!==t.player).every(i=>G.passers.has(i));}
 function removeCards(P,cards){const ids=new Set(cards.map(c=>c.id));P.hand=P.hand.filter(c=>!ids.has(c.id));}
 function speed(){return G.players.some((P,i)=>P.ctrl!=='cpu'&&isActive(i))?650:200;}
@@ -317,7 +345,7 @@ function say(i,text,hot){G.say[i]={text,hot,t:Date.now()};setTimeout(render,2700
 function nm(i){return `⟦${G.players[i].name}⟧`;}
 
 function kill(i){const P=G.players[i];if(P.dead)return;P.dead=true;P.life=0;P.hand=[];G.deadOrder.push(i);log(`${nm(i)} はライフが尽きて敗北`);}
-function flow(msg){G.top=null;G.pile=[];G.passers.clear();G.jback=false;if(msg)log(msg);}
+function flow(msg){if(G.hist&&G.hist.length&&!G.hist[G.hist.length-1].f)G.hist.push({f:1});G.top=null;G.pile=[];G.passers.clear();G.jback=false;if(msg)log(msg);}
 function checkEnd(){
   if(G.over)return true;
   const act=activeList();
@@ -327,20 +355,22 @@ function checkEnd(){
 
 /* ---------- game ---------- */
 /* spec: [{name, ctrl:'local'|'remote'|'cpu', peer}] ×4 */
-function newGame(spec,autostart=true){
+function newGame(spec,autostart=true,startSeat=-1){
   const token=(G&&G.token>0?G.token:0)+1;
   const deck=shuffle(Object.values(CARD).map(c=>c));
-  const players=spec.map((s,i)=>({i,name:s.name,ctrl:s.ctrl,peer:s.peer||null,hand:deck.slice(i*8,i*8+8),life:3,finished:false,dead:false,miyako:false}));
+  const per=spec.length>=7?7:8;
+  const players=spec.map((s,i)=>({i,name:s.name,ctrl:s.ctrl,peer:s.peer||null,hand:deck.slice(i*per,i*per+per),life:3,finished:false,dead:false,miyako:false}));
   players.forEach(p=>sortHand(p.hand));
   G={token,players,top:null,pile:[],revolution:false,jback:false,current:0,passers:new Set(),finishOrder:[],deadOrder:[],miyakoOrder:[],
-     seen:[],logs:[],over:false,remaining:null,say:{},stamp:null,turn:null,asking:null,pending:null};
+     seen:[],logs:[],over:false,remaining:null,say:{},stamp:null,turn:null,asking:null,pending:null,hist:[]};
   MY=Math.max(0,players.findIndex(p=>p.ctrl==='local'));
-  let start=players.findIndex(p=>p.hand.some(c=>c.id==='D3'));
-  const why=start>=0?'♦3を持つ':'抽選で';
-  if(start<0)start=Math.floor(Math.random()*4);
+  /* first game: random starter; rematches: last place of the previous game starts */
+  const rematch=typeof startSeat==='number'&&startSeat>=0&&startSeat<spec.length;
+  const start=rematch?startSeat:Math.floor(Math.random()*spec.length);
+  const why=rematch?'前回最下位の':'抽選で';
   G.current=start;
   UI={mode:'idle'};NET.resultShown=false;
-  log(`新しいゲーム。各自8枚、残り${deck.length-32}枚は配られません`);
+  log(`新しいゲーム（${spec.length}人）。各自${per}枚、残り${deck.length-per*spec.length}枚は配られません`);
   log(`${why}${nm(start)}から開始`);
   document.getElementById('result').hidden=true;
   render();
@@ -356,10 +386,8 @@ async function gameLoop(){
     if(G.top&&allOthersPassed()){flow('全員パス。場が流れた');G.turn=p;render();await wait(450);}
     if(G.top&&G.top.doubtable&&G.top.player!==p&&!G.top.offered.has(p)){
       G.top.offered.add(p);
-      const doubted=G.top.player;
       const r=await offerDoubt(p);
       if(r==='lie')continue;
-      if(r==='truth'){restartFrom(doubted);render();continue;}
       if(checkEnd())break;
       if(!isActive(p)){G.current=nextActive(p);continue;}
     }
@@ -376,6 +404,7 @@ async function gameLoop(){
   }
   G.turn=null;G.asking=null;G.pending=null;UI={mode:'idle'};render();
   await wait(600);
+  NET.lastLoser=computeOrder().order.slice(-1)[0];
   if(!NET.resultShown){NET.resultShown=true;showResult();}
 }
 
@@ -388,6 +417,9 @@ async function doPlay(p,a){
   const top={player:p,cards:a.cards,decl:a.decl,n,extra:a.extra,offered:new Set(),doubtable:a.cards.some(x=>!x.up),
              revealed:false,applied:null,finishedHere:false,prevJoker:!!(prev&&prev.decl.v===16)};
   G.top=top;G.pile.push(top);G.passers.clear();
+  /* full record for the end-of-game log: real cards, face up/down, and whether it was a lie */
+  top.h={p,d:declKey(a.decl),c:a.cards.map(x=>[x.card.id,x.up?1:0]),lie:a.cards.some(x=>!x.up&&!matches(x.card,a.decl))?1:0};
+  G.hist.push(top.h);
   a.cards.filter(x=>x.up).forEach(x=>G.seen.push(x.card));
   const fd=a.cards.filter(x=>!x.up).length;
   log(`${nm(p)}: 「${declLabel(a.decl)}」×${n}${fd?`（伏せ${fd}）`:''}`);
@@ -397,26 +429,21 @@ async function doPlay(p,a){
   await wait(450);
   const skipN=(a.decl.v===5&&!a.decl.spade3)?n:0;
   const cands=nextActives(p,skipN+1);
-  let truth=false;
+  /* face-down 8-cut: the doubt chance goes round everyone before the cut resolves */
+  const isCut=a.decl.v===8&&!a.decl.spade3;
+  const doubters=isCut?nextActives(p,G.players.length-1):cands;
   if(top.doubtable){
-    for(const c of cands){
+    for(const c of doubters){
       if(!isActive(c))continue;
       top.offered.add(c);
       const r=await offerDoubt(c);
       if(r==='lie')return;
-      if(r==='truth'){truth=true;break;}
+      if(r==='truth')break;
     }
   }
   if(G.top!==top)return;
   settle(p,top,skipN,cands);
-  if(truth)restartFrom(p);
   render();
-}
-/* doubt failed: abilities already resolved; flush the field and the doubted player leads */
-function restartFrom(p){
-  flow(`ダウト失敗。場が流れ、${nm(p)} から新しく始める`);
-  G.current=isActive(p)?p:nextActive(p);
-  if(G.current<0)G.current=p;
 }
 
 function settle(p,top,skipN,cands){
@@ -427,6 +454,7 @@ function settle(p,top,skipN,cands){
     const to=nextActive(p);
     if(to>=0&&to!==p){
       G.players[to].hand.push(...top.extra);sortHand(G.players[to].hand);ap.give={to,cards:top.extra.slice()};
+      if(top.h)top.h.give=[to,top.extra.map(c=>c.id)];
       log(`7渡し：${nm(p)} → ${nm(to)} に${top.extra.length}枚`);
       log(`受け取った：${top.extra.map(cardName).join('、')}`,to);
       log(`渡した：${top.extra.map(cardName).join('、')}`,p);
@@ -434,6 +462,7 @@ function settle(p,top,skipN,cands){
   }
   if(d.v===10&&!d.spade3&&top.extra.length){
     ap.discard=top.extra.slice();
+    if(top.h)top.h.disc=top.extra.map(c=>c.id);
     log(`10捨て：${nm(p)} が${top.extra.length}枚捨てた`);
     log(`捨てた：${top.extra.map(cardName).join('、')}`,p);
   }
@@ -481,6 +510,7 @@ async function resolveDoubt(dI){
   log(`${nm(dI)} が ${nm(lI)} にダウト！`);
   render();await wait(950);
   const lie=fd.some(x=>!matches(x.card,top.decl));
+  if(top.h)top.h.db=[dI,lie?1:0];
   top.revealed=true;G.stamp=null;fd.forEach(x=>G.seen.push(x.card));
   log(`公開：${fd.map(x=>cardName(x.card)).join('、')}`);
   render();await wait(1150);
@@ -689,7 +719,7 @@ function onAct(a){
   if(a==='new'){
     if(NET.mode==='client')return;
     if(NET.mode==='host')return hostStart();
-    return startSolo();
+    return startSolo(true);
   }
   if(UI.mode==='doubt'&&(a==='doubt-yes'||a==='doubt-no')){const r=UI.resolve;UI={mode:'idle'};r(a==='doubt-yes');render();return;}
   if(UI.mode==='play'){
@@ -749,8 +779,9 @@ function kindHTML(P){return NET.mode==='solo'?'':`<span class="kind">${P.ctrl===
 
 function render(){
   if(!G)return;
-  const seats=[1,2,3].map(k=>{
-    const i=(MY+k)%4,P=G.players[i];
+  const NP=G.players.length;
+  const seats=Array.from({length:NP-1},(_,j)=>j+1).map(k=>{
+    const i=(MY+k)%NP,P=G.players[i];
     const gone=P.finished||P.dead||P.miyako;
     const fan=Array.from({length:Math.min(P.hand.length,8)},()=>'<i></i>').join('');
     return `<div class="seat ${G.turn===i||G.asking===i?'turn':''} ${gone?'gone':''}">
@@ -848,15 +879,53 @@ function renderMe(){
     <div class="hand">${hand||'<span class="empty">手札はありません</span>'}</div>`;
 }
 
-function showResult(){
+function computeOrder(){
   const order=[...G.finishOrder];
   const why={};
   G.finishOrder.forEach(i=>why[i]='上がり');
   if(G.remaining!==null&&G.remaining!==undefined){order.push(G.remaining);why[G.remaining]='最後まで残った';}
   G.deadOrder.slice().reverse().forEach(i=>{order.push(i);why[i]='ライフ切れ';});
   G.miyakoOrder.forEach(i=>{order.push(i);why[i]='嘘の上がりで都落ち';});
-  document.getElementById('rank').innerHTML=order.map((i,k)=>`<li><span class="pos">${k+1}位</span><span><b>${esc(G.players[i].name)}</b>${i===MY?'（あなた）':''}　${TITLES[k]||''}<br><span class="why">${why[i]}</span></span>${livesHTML(G.players[i].life)}</li>`).join('');
+  return {order,why};
+}
+function showResult(){
+  const {order,why}=computeOrder();
+  document.getElementById('rank').innerHTML=order.map((i,k)=>`<li><span class="pos">${k+1}位</span><span><b>${esc(G.players[i].name)}</b>${i===MY?'（あなた）':''}　${titleOf(k,order.length)}<br><span class="why">${why[i]}</span></span>${livesHTML(G.players[i].life)}</li>`).join('');
+  document.getElementById('histbox').innerHTML=histHTML();
   document.getElementById('result').hidden=false;
+}
+/* end-of-game record: who lied, who got caught, every play with face-down cards revealed */
+function histHTML(){
+  const H=Array.isArray(G.hist)?G.hist:[];
+  if(!H.length)return '';
+  const name=i=>G.players[i]?esc(G.players[i].name):'?';
+  const chip=(id,up,d)=>{const c=CARD[id];if(!c)return '';const bad=!up&&!matches(c,d);const red=c.suit==='H'||c.suit==='D';
+    return `<span class="cc ${up?'':'dn'} ${bad?'bad':''} ${red&&!bad?'r':''}">${cardName(c)}</span>`;};
+  const st=G.players.map(()=>({plays:0,lies:0,caught:0,dOk:0,dNg:0}));
+  H.forEach(e=>{
+    if(e.f||!st[e.p])return;
+    st[e.p].plays++;if(e.lie)st[e.p].lies++;
+    if(Array.isArray(e.db)&&st[e.db[0]]){if(e.db[1]){st[e.p].caught++;st[e.db[0]].dOk++;}else st[e.db[0]].dNg++;}
+  });
+  const sum=`<table class="hsum"><thead><tr><th>プレイヤー</th><th>出した回数</th><th>嘘</th><th>バレた嘘</th><th>逃げ切った嘘</th><th>ダウト成功</th><th>ダウト失敗</th></tr></thead><tbody>${
+    st.map((s,i)=>`<tr><td>${name(i)}${i===MY?'（あなた）':''}</td><td>${s.plays}</td><td class="${s.lies?'hot':''}">${s.lies}</td><td>${s.caught}</td><td>${s.lies-s.caught}</td><td>${s.dOk}</td><td>${s.dNg}</td></tr>`).join('')}</tbody></table>`;
+  let k=0;
+  const rows=H.map(e=>{
+    if(e.f)return '<li class="hf">場が流れた</li>';
+    k++;
+    const d=declFromKey(e.d);
+    const cards=(e.c||[]).map(([id,up])=>chip(id,up,d)).join('');
+    const hasDown=(e.c||[]).some(x=>!x[1]);
+    let tail=e.lie?'<span class="bdg lie">嘘</span>':hasDown?'<span class="bdg ok">伏せ・本当</span>':'';
+    if(Array.isArray(e.db))tail+=`<span class="dbt">${name(e.db[0])}がダウト → ${e.db[1]?'成功':'失敗'}</span>`;
+    let ex='';
+    if(Array.isArray(e.give))ex=`<span class="exl">${name(e.give[0])}に ${(e.give[1]||[]).map(id=>CARD[id]?cardName(CARD[id]):'').join(' ')} を渡した</span>`;
+    if(Array.isArray(e.disc))ex=`<span class="exl">${e.disc.map(id=>CARD[id]?cardName(CARD[id]):'').join(' ')} を捨てた</span>`;
+    return `<li class="${e.lie?'hl-lie':''}"><span class="hn">${k}</span><span class="hb"><b>${name(e.p)}</b><span>「${declLabel(d)}」×${(e.c||[]).length}</span>${cards}${tail}${ex}</span></li>`;
+  }).join('');
+  return `<h3>嘘の集計</h3><div class="tblwrap">${sum}</div>
+    <h3>試合ログ</h3><p class="muted">点線のカードは伏せて出したもの。赤いカードは宣言と違う（嘘の）カードです。</p>
+    <ol class="hist">${rows}</ol>`;
 }
 
 /* ---------- lobby & online ---------- */
@@ -864,12 +933,12 @@ function getNick(){const v=cleanNick(document.getElementById('nick').value);try{
 function showLobby(on){document.getElementById('lobby').hidden=!on;}
 function setNetStatus(t){document.getElementById('net-status').textContent=t||'';}
 
-function startSolo(){
+function startSolo(rematch){
   leaveRoom();
   NET.mode='solo';
   const nick=getNick();
   showLobby(false);
-  newGame([{name:nick==='プレイヤー'?'あなた':nick,ctrl:'local'},...CPU_NAMES.map(n=>({name:n,ctrl:'cpu'}))]);
+  newGame([{name:nick==='プレイヤー'?'あなた':nick,ctrl:'local'},...CPU_NAMES.slice(0,getCount()-1).map(n=>({name:n,ctrl:'cpu'}))],true,rematch===true?NET.lastLoser:-1);
 }
 function toLobby(){
   leaveRoom();
@@ -902,7 +971,7 @@ function createTable(attempt=0){
   peer.on('open',()=>{
     if(NET.peer!==peer)return;
     setNetStatus('');
-    NET.mode='host';NET.code=code;NET.started=false;NET.myPeer=peer.id;
+    NET.mode='host';NET.code=code;NET.started=false;NET.myPeer=peer.id;NET.size=getCount();NET.spec=null;
     document.getElementById('lobby-main').hidden=true;
     document.getElementById('lobby-table').hidden=false;
     renderLobbyTable();
@@ -954,18 +1023,18 @@ function onHostClose(conn){
 function updateSeats(){
   if(NET.started)return;
   NET.order=NET.order.filter(p=>NET.conns.has(p));
-  NET.seats=NET.order.slice(0,3).map(p=>({peer:p,nick:NET.conns.get(p).nick}));
+  NET.seats=NET.order.slice(0,NET.size-1).map(p=>({peer:p,nick:NET.conns.get(p).nick}));
   renderLobbyTable();
 }
 function hostLobbyEmit(){
-  const data={t:'lobby',code:NET.code,host:NET.nick,seats:NET.seats.map(s=>({peer:s.peer,nick:s.nick})),started:NET.started?1:0};
+  const data={t:'lobby',code:NET.code,host:NET.nick,size:NET.size,seats:NET.seats.map(s=>({peer:s.peer,nick:s.nick})),started:NET.started?1:0};
   for(const id of NET.conns.keys())sendTo(id,data);
 }
 function renderLobbyTable(){
   const box=document.getElementById('lobby-table');
   if(NET.mode==='host'){
     const rows=[`<li><span class="sn">席1</span><span>${esc(NET.nick)}（あなた・ホスト）</span></li>`];
-    for(let i=0;i<3;i++){const s=NET.seats[i];rows.push(`<li><span class="sn">席${i+2}</span><span>${s?esc(s.nick):'<span class="muted">空席（CPUが入ります）</span>'}</span></li>`);}
+    for(let i=0;i<NET.size-1;i++){const s=NET.seats[i];rows.push(`<li><span class="sn">席${i+2}</span><span>${s?esc(s.nick):'<span class="muted">空席（CPUが入ります）</span>'}</span></li>`);}
     box.innerHTML=`<h3>テーブルを作りました</h3>
       <p class="muted">このコードを友達に伝えてください。友達は同じゲームのページ（このHTMLファイルか、公開したURL）を開き、コードを入力して参加します。</p>
       <p class="code" id="code-show">${esc(NET.code)}</p>
@@ -978,7 +1047,7 @@ function renderLobbyTable(){
     else if(!L)body='<p class="muted">ホストを探しています…</p>';
     else{
       const rows=[`<li><span class="sn">席1</span><span>${esc(cleanNick(L.host))}（ホスト）</span></li>`];
-      for(let i=0;i<3;i++){const s=L.seats[i];rows.push(`<li><span class="sn">席${i+2}</span><span>${s?esc(cleanNick(s.nick))+(s.peer===NET.myPeer?'（あなた）':''):'<span class="muted">空席（CPUが入ります）</span>'}</span></li>`);}
+      for(let i=0;i<L.size-1;i++){const s=L.seats[i];rows.push(`<li><span class="sn">席${i+2}</span><span>${s?esc(cleanNick(s.nick))+(s.peer===NET.myPeer?'（あなた）':''):'<span class="muted">空席（CPUが入ります）</span>'}</span></li>`);}
       const inSeat=L.seats.some(s=>s.peer===NET.myPeer);
       body=`<ul class="slots">${rows.join('')}</ul><p class="muted">${L.started?(inSeat?'ゲームを読み込み中…':'このテーブルはゲーム中か満席です'):(inSeat?'ホストがゲームを開始するのを待っています':'席が空くのを待っています（満席）')}</p>`;
     }
@@ -995,7 +1064,7 @@ function hostStart(){
     const live=new Set(NET.conns.keys());
     seats.forEach((s,i)=>{if(s.ctrl==='remote'&&live.has(s.peer))spec.push({...s});else spec.push({name:CPU_NAMES[i],ctrl:'cpu'});});
   }else{
-    for(let i=0;i<3;i++){
+    for(let i=0;i<NET.size-1;i++){
       const s=NET.seats[i];
       if(s){let n=s.nick;if(used.has(n))n=n+(i+2);used.add(n);spec.push({name:n,ctrl:'remote',peer:s.peer});}
       else spec.push({name:CPU_NAMES[i],ctrl:'cpu'});
@@ -1004,7 +1073,7 @@ function hostStart(){
   NET.spec=spec;NET.started=true;
   showLobby(false);
   hostLobbyEmit();
-  newGame(spec);
+  newGame(spec,true,seats?NET.lastLoser:-1);
 }
 function remotePending(seat,kind){
   return ask(new Promise(res=>{G.pending={seat,kind,pid:++NET.pid,resolve:res};render();})).then(v=>{G.pending=null;return v;});
@@ -1053,7 +1122,8 @@ function viewFor(seat){
     rv:G.revolution?1:0,jb:G.jback?1:0,fo:G.finishOrder,dO:G.deadOrder,mo:G.miyakoOrder,rem:G.remaining,over:G.over?1:0,
     turn:G.turn,ask:G.asking,st:G.stamp,
     say:Object.entries(G.say).filter(([,s])=>now-s.t<2500).map(([i,s])=>[+i,s.text,s.hot?1:0,now-s.t]),
-    mode:pend?G.pending.kind:null,pid:pend?G.pending.pid:null,lg:[]};
+    mode:pend?G.pending.kind:null,pid:pend?G.pending.pid:null,lg:[],
+    hist:G.over?G.hist:null};
   const logs=G.logs.filter(l=>l.to===undefined||l.to===null||l.to===seat).map(l=>[l.text,l.to===seat?1:0]);
   v.lg=logs.slice(0,40);
   return v;
@@ -1106,7 +1176,8 @@ function onClientData(d){
   if(!d||typeof d!=='object')return;
   if(d.t==='lobby'){
     if(!Array.isArray(d.seats))return;
-    NET.lobby={host:String(d.host||''),seats:d.seats.slice(0,3).map(s=>({peer:String(s&&s.peer||''),nick:String(s&&s.nick||'')})),started:!!d.started};
+    const size=Math.min(7,Math.max(4,d.size|0||4));
+    NET.lobby={host:String(d.host||''),size,seats:d.seats.slice(0,size-1).map(s=>({peer:String(s&&s.peer||''),nick:String(s&&s.nick||'')})),started:!!d.started};
     if(document.getElementById('lobby').hidden===false)renderLobbyTable();
   }else if(d.t==='view'){
     try{hydrate(d.v);}catch(e){console.error(e);}
@@ -1121,7 +1192,7 @@ function sendAct(pid,r){
   if(NET.conn&&NET.conn.open){try{NET.conn.send(data);}catch(e){}}
 }
 function hydrate(v){
-  if(!v||!Array.isArray(v.p)||v.p.length!==4)return;
+  if(!v||!Array.isArray(v.p)||v.p.length<4||v.p.length>7)return;
   const seat=v.me|0;
   const players=v.p.map((q,i)=>({i,name:cleanNick(q.nm),life:q.l|0,finished:!!q.f,dead:!!q.d,miyako:!!q.m,ctrl:q.c?'cpu':'remote',
     hand:i===seat?(v.h||[]).map(id=>CARD[id]).filter(Boolean):Array.from({length:Math.min(q.n|0,53)},()=>({id:'x'}))}));
@@ -1129,7 +1200,7 @@ function hydrate(v){
   const prevToken=G?G.token:0;
   G={token:prevToken,players,top,pile:(v.pile||[]).map(([pl,d,n])=>({player:pl|0,decl:declFromKey(d),n:n|0})),revolution:!!v.rv,jback:!!v.jb,
      finishOrder:v.fo||[],deadOrder:v.dO||[],miyakoOrder:v.mo||[],remaining:v.rem,over:!!v.over,turn:v.turn,asking:v.ask,
-     stamp:v.st&&typeof v.st.text==='string'?v.st:null,say:{},logs:(v.lg||[]).map(([text,priv])=>({text:String(text),to:priv?seat:undefined})),seen:[],passers:new Set()};
+     stamp:v.st&&typeof v.st.text==='string'?v.st:null,say:{},logs:(v.lg||[]).map(([text,priv])=>({text:String(text),to:priv?seat:undefined})),seen:[],passers:new Set(),hist:Array.isArray(v.hist)?v.hist:[]};
   (v.say||[]).forEach(([i,text,hot,age])=>{G.say[i]={text:String(text),hot:!!hot,t:Date.now()-(age|0)};});
   MY=seat;
   if(v.mode&&v.pid!==NET.answered){
@@ -1151,7 +1222,7 @@ function hydrate(v){
 
 /* ---------- boot ---------- */
 try{const n=localStorage.getItem('ld-nick');if(n)document.getElementById('nick').value=n;}catch(e){}
-newGame([{name:'あなた',ctrl:'local'},...CPU_NAMES.map(n=>({name:n,ctrl:'cpu'}))],false);
+newGame([{name:'あなた',ctrl:'local'},...CPU_NAMES.slice(0,3).map(n=>({name:n,ctrl:'cpu'}))],false);
 if(!hasNet()){
   ['btn-create','btn-join'].forEach(id=>document.getElementById(id).disabled=true);
   setNetStatus('通信ライブラリを読み込めませんでした。インターネットにつないでページを再読み込みしてください。「ひとりで遊ぶ」は使えます。');
