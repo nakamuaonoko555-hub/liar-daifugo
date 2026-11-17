@@ -249,7 +249,7 @@ button,input{font:inherit;color:inherit}
     <h3>ダウト</h3>
     <ul>
       <li>伏せカードを含む出し札には、次の番の人がダウトできます。その人がパスしたら、さらに次の人もダウトできます。5スキップで飛ばされた人もダウトできます。</li>
-      <li>本当だった場合：ダウトした人のライフ −1。ゲームはそのまま続きます。</li>
+      <li>本当だった場合：ダウトした人のライフ −1。ダウトした人の手番は終了し（パス扱い）、次の人に移ります。</li>
       <li>嘘だった場合：出した人のライフが伏せた枚数だけ減ります。カードは捨てられ、能力は発動せず、場が流れてダウトした人から再開します。7渡し・10捨てで選んだカードは手札に戻ります。</li>
       <li>伏せカードで上がって嘘がバレたら、最下位に都落ちします。</li>
     </ul>
@@ -389,6 +389,7 @@ async function gameLoop(){
       const r=await offerDoubt(p);
       if(r==='lie')continue;
       if(checkEnd())break;
+      if(r==='truth'){endTurnAfterFailedDoubt(p);render();continue;}
       if(!isActive(p)){G.current=nextActive(p);continue;}
     }
     G.turn=p;render();
@@ -432,20 +433,28 @@ async function doPlay(p,a){
   /* face-down 8-cut: the doubt chance goes round everyone before the cut resolves */
   const isCut=a.decl.v===8&&!a.decl.spade3;
   const doubters=isCut?nextActives(p,G.players.length-1):cands;
+  let failedBy=-1;
   if(top.doubtable){
     for(const c of doubters){
       if(!isActive(c))continue;
       top.offered.add(c);
       const r=await offerDoubt(c);
       if(r==='lie')return;
-      if(r==='truth')break;
+      if(r==='truth'){failedBy=c;break;}
     }
   }
   if(G.top!==top)return;
   settle(p,top,skipN,cands);
+  /* failed doubt: the doubter's turn ends (counts as a pass) */
+  if(failedBy>=0&&G.top===top&&G.current===failedBy)endTurnAfterFailedDoubt(failedBy);
   render();
 }
 
+function endTurnAfterFailedDoubt(d){
+  if(isActive(d)){G.passers.add(d);log(`${nm(d)} はダウト失敗で手番終了`);}
+  const n=nextActive(d);
+  if(n>=0)G.current=n;
+}
 function settle(p,top,skipN,cands){
   const d=top.decl,n=top.n,ap=top.applied={};
   if(n>=4){G.revolution=!G.revolution;ap.rev=true;log(`革命！ 強さが${G.revolution?'逆転':'元に戻った'}`);G.stamp={text:'革命',kind:'info'};setTimeout(()=>{if(G.stamp&&G.stamp.text==='革命'){G.stamp=null;render();}},1100);}
